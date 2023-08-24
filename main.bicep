@@ -1,58 +1,64 @@
 
-param kvName string = 'kv-cloud'
+param kvName string
+param vmAdminUserName string
+
 param vnetName string = 'vnet-cloud'
 param subnetName string = 'subnet-main'
-param usrObjId string = '<YOUR-USR-OBJECT-ID>'
-param vmAdminUserName string
-@secure()
-param vmAdminPassword string
+param vmName string = 'vm-cloud'
+// param usrObjId string = '<YOUR-USR-OBJECT-ID>'
+// @secure()
+// param vmAdminPassword string
 
-// Create Azure Key Vault to store secret for VM Admin Password
-resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
+// // Create Azure Key Vault to store secret for VM Admin Password
+// resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
+//   name: kvName
+//   location: resourceGroup().location
+//   properties: {
+//     enabledForDeployment: true
+//     enabledForTemplateDeployment: true
+//     enabledForDiskEncryption: true
+//     tenantId: subscription().tenantId
+//     accessPolicies: [
+//       {
+//         tenantId: subscription().tenantId
+//         objectId: usrObjId
+//         permissions: {
+//           secrets: [
+//             'list'
+//             'get'
+//           ]
+//         }
+//       }
+//     ]
+//     sku: {
+//       name: 'standard'
+//       family: 'A'
+//     }
+//     networkAcls: {
+//       bypass: 'AzureServices'
+//       defaultAction: 'Allow'
+//       ipRules: []
+//       virtualNetworkRules: []
+//     }
+//   }
+// }
+
+// resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+//   parent: keyVault
+//   name: 'vmAdminPassword'
+//   properties: {
+//     value: vmAdminPassword
+//   }
+// }
+
+resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
   name: kvName
-  location: resourceGroup().location
-  properties: {
-    enabledForDeployment: true
-    enabledForTemplateDeployment: true
-    enabledForDiskEncryption: true
-    tenantId: subscription().tenantId
-    accessPolicies: [
-      {
-        tenantId: subscription().tenantId
-        objectId: usrObjId
-        permissions: {
-          secrets: [
-            'list'
-            'get'
-          ]
-        }
-      }
-    ]
-    sku: {
-      name: 'standard'
-      family: 'A'
-    }
-    networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Allow'
-      ipRules: []
-      virtualNetworkRules: []
-    }
-  }
-}
-
-resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
-  parent: keyVault
-  name: 'vmAdminPassword'
-  properties: {
-    value: vmAdminPassword
-  }
 }
 
 // execute modules
 
 module CreateVnet './modules/vnet.bicep' = {
-  name: 'create-vnet-cloud'
+  name: 'create-vnet-module'
   params: {
     location: resourceGroup().location
     vnetName: vnetName
@@ -61,10 +67,10 @@ module CreateVnet './modules/vnet.bicep' = {
 }
 
 module CreateVM './modules/vm.bicep' = {
-  name: 'vm1'
+  name: 'create-vm-module'
   params: {
     location: resourceGroup().location
-    vmName: 'vm1'
+    vmName: vmName
     vnetName: vnetName
     subnetName: subnetName
     vmAdminUserName: vmAdminUserName
@@ -72,6 +78,5 @@ module CreateVM './modules/vm.bicep' = {
   }
   dependsOn: [
     CreateVnet
-    keyVault
   ]
 }

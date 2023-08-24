@@ -3,10 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "kvName": {
-        "value": "kv-cloud-zukako"
+        "value": "<UNIQUE-KV-NAME>"
       },
       "usrObjId": {
-        "value": "187cd1e5-91be-4fd5-98db-8eea62f64221"
+        "value": "<YOUR-USER-OBJECT-ID>"
       },
         "vmAdminUserName": {
             "value": "azureuser"
